@@ -19,6 +19,8 @@ max_speed_level = 9
 max_chance_level = 9
 max_point_level = 5
 
+coin_history = []
+
 #functions
 
 def stat_show():
@@ -34,12 +36,58 @@ def stat_show():
     print("Speed upgrade level:", speed_level, "/", max_speed_level)
     print("Point upgrade level:", point_level, "/", max_point_level)
 
+    print("\n=== COIN HISTORY ===")
+
+    if len(coin_history) == 0:
+        print("No flips recorded yet.")
+    else:
+        for index in range(len(coin_history)):
+            print("Flip", index + 1, ":", coin_history[index])
+
+        
+        heads_count = 0
+        tails_count = 0
+
+        for result in coin_history:
+            if result == "HEADS":
+                heads_count += 1
+            elif result == "TAILS":
+                tails_count += 1
+
+        print("\nHeads in history:", heads_count)
+        print("Tails in history:", tails_count)
+
+        print("First flip:", coin_history[0])
+        print("Most recent flip:", coin_history[-1])
+
+
+
 def coin_draw(result):
     print("\n     _____")
     print("   /       \\")
     print("  |  "+ result+"  |")
     print("   \\_______/\n")
 
+def calculate_points(result, multiplier):
+    if result == "HEADS":
+        return 3 * multiplier
+    else:
+        return 1 * multiplier
+
+def save_history():
+    with open("coin_history.txt", "w") as file:
+        for result in coin_history:
+            file.write(result + "\n")
+
+def load_history():
+    try:
+        with open("coin_history.txt", "r") as file:
+            for line in file:
+                coin_history.append(line.strip())
+    except FileNotFoundError:
+        print("No previous coin history found.")
+
+load_history()
 
 # main game loop
 
@@ -53,11 +101,21 @@ while True:
     print("2. Upgrades")
     print("3. View stats")
     print("4. Quit")
-    choice = input("Choose an option: ")
+    try:
+        choice = int(input("Choose an option: "))
+
+    except ValueError:
+        print("Please enter a number!")
+
+    else:
+        print("Input received successfully!")
+
+    finally:
+        print("Returning to menu...")
 
 
 #if Flip
-    if choice == "1":
+    if choice == 1:
         input(f"Press Enter to flip the coin in {flip_speed} seconds...")
         flip_actions += 1
 
@@ -80,8 +138,8 @@ while True:
                 heads_streak += 1
                 tails_streak = 0
                 if number_of_flips == 1:
-                    points += 3 * point_multiplier
-                    points_earned = 3 * point_multiplier
+                    points_earned = calculate_points(result, point_multiplier)
+                    points += points_earned
                 else:
                     points_earned = 0
 
@@ -97,14 +155,19 @@ while True:
                 tails_streak += 1
                 heads_streak = 0
                 if number_of_flips == 1:
-                    points += 1 * point_multiplier
-                    points_earned = 1 * point_multiplier
+                    points_earned = calculate_points(result, point_multiplier)
+                    points += points_earned
                 else:
                     points_earned = 0
 
                     # tested using coin_flip() and even coin_flip(result) and the output didnt work 
                 coin_draw(result)
                 print("Points earned:", points_earned)
+
+
+            coin_history.append(result)
+            save_history()
+
             best_streak = max(best_streak, heads_streak)
             print("Result:", result)
             print("Current streak:", heads_streak, "/ 10")
@@ -167,12 +230,15 @@ while True:
                 speed_level = 0
                 chance_level = 0
                 point_level = 1
+
+                coin_history = []
+                save_history()
             else:
                 print("Thanks for playing!")
                 break
 
 #If upgrades
-    elif choice == "2":
+    elif choice == 2:
         while True:
             print("\n=== UPGRADES ===")
             print("Your points:", points)
@@ -247,10 +313,10 @@ while True:
                 print("Invalid choice!")
 
 #If stats
-    elif choice == "3":
+    elif choice == 3:
         stat_show()
 #If quit
-    elif choice == "4":
+    elif choice == 4:
         print("Thanks for playing!")
         break
     else:
