@@ -73,7 +73,6 @@ def calculate_points(result, multiplier):
         return 3 * multiplier
     else:
         return 1 * multiplier
-
 def save_history():
     with open("coin_history.txt", "w") as file:
         for result in coin_history:
